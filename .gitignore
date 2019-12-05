@@ -1,0 +1,4 @@
+.idea/
+target/
+identity-outbound-auth-weblogic-oidc.iml
+org.wso2.carbon.identity.application.authenticator.weblogic.oauth2.iml
