@@ -196,7 +196,7 @@
         <dependency>
             <groupId>org.wso2.carbon.identity.outbound.auth.oidc</groupId>
             <artifactId>org.wso2.carbon.identity.application.authenticator.oidc</artifactId>
-            <version>5.1.17</version>
+            <version>5.2.0</version>
         </dependency>
     </dependencies>
 
@@ -404,7 +404,7 @@
         <maven.scr.plugin.version>1.22.0</maven.scr.plugin.version>
         <nimbusds.version>5.8.0.wso2v1</nimbusds.version>
         <nimbusds.osgi.version.range>[5.8.0,6.0.0)</nimbusds.osgi.version.range>
-        <application.authenticator.oidc.version.range>[5.1.17,5.2.0)</application.authenticator.oidc.version.range>
+        <application.authenticator.oidc.version.range>[5.2.0,6.0.0)</application.authenticator.oidc.version.range>
     </properties>
 
 </project>

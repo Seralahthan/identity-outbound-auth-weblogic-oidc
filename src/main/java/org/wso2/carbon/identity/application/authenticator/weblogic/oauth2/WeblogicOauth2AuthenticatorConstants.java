@@ -6,5 +6,5 @@ public class WeblogicOauth2AuthenticatorConstants {
 
     public static final String AUTHENTICATOR_NAME = "WeblogicOAuth2Authenticator";
     public static final String USER_INFO_FIELDS = "UserInfoFields";
-    public static final String DEFAULT_USER_IDENTIFIER = "id";
+    public static final String DEFAULT_USER_IDENTIFIER = "userId";
 }

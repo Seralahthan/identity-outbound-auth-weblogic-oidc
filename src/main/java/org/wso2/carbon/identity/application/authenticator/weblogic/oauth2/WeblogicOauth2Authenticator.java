@@ -142,22 +142,6 @@ public class WeblogicOauth2Authenticator extends OpenIDConnectAuthenticator
         return WeblogicOauth2AuthenticatorConstants.AUTHENTICATOR_NAME;
     }
 
-//    protected void buildClaims(AuthenticationContext context, Map<String, Object> jsonObject, ClaimConfig claimConfig)
-//            throws ApplicationAuthenticatorException {
-//
-//        if (jsonObject != null) {
-//            Map<ClaimMapping, String> claims = new HashMap<>();
-//            String claimUri;
-//            Object claimValueObject;
-//
-//
-//        } else {
-//            if (log.isDebugEnabled()) {
-//                log.debug("Decoded json object is null");
-//            }
-//            throw new ApplicationAuthenticatorException(("Decoded json object is null"));
-//        }
-//    }
     /**
      * This method get idp claim configurations
      * @param context
@@ -189,6 +173,27 @@ public class WeblogicOauth2Authenticator extends OpenIDConnectAuthenticator
         return claimConfig;
     }
 
+    /**
+     *
+     * @param context
+     * @param oidcClaims
+     * @param oidcResponse
+     * @return
+     */
+    @Override
+    protected String getAuthenticateUser(AuthenticationContext context, Map<String, Object> oidcClaims,
+                                         OAuthClientResponse oidcResponse) {
+        return (String) oidcClaims.get(WeblogicOauth2AuthenticatorConstants.DEFAULT_USER_IDENTIFIER);
+    }
+
+    /**
+     *
+     * @param userInfoUrl
+     * @param userInfoFields
+     * @param accessToken
+     * @return
+     * @throws ApplicationAuthenticatorException
+     */
     protected Map<String, Object> getUserInfoJson(String userInfoUrl, String userInfoFields, String accessToken)
         throws ApplicationAuthenticatorException {
         Map<String, Object> filteredJsonObject = new HashMap<>();
@@ -214,6 +219,14 @@ public class WeblogicOauth2Authenticator extends OpenIDConnectAuthenticator
          return filteredJsonObject;
     }
 
+    /**
+     *
+     * @param userInfoUrl
+     * @param userInfoFields
+     * @param accessToken
+     * @return
+     * @throws ApplicationAuthenticatorException
+     */
     protected String getUserInfoString(String userInfoUrl, String userInfoFields, String accessToken)
         throws ApplicationAuthenticatorException {
         String userInfoString;
@@ -252,63 +265,7 @@ public class WeblogicOauth2Authenticator extends OpenIDConnectAuthenticator
 
         return b.toString();
     }
-//    @Override
-//    protected boolean requiredIDToken(Map<String, String> authenticatorProperties) {
-//        return false;
-//    }
 
-//    private Map<String, Object> getIdTokenClaims(AuthenticationContext context, String idToken) {
-//        context.setProperty(OIDCAuthenticatorConstants.ID_TOKEN, idToken);
-//        String base64Body = idToken.split("\\.")[1];
-//        byte[] decoded = Base64.decodeBase64(base64Body.getBytes());
-//        Set<Map.Entry<String, Object>> jwtAttributeSet = new HashSet<>();
-//        try {
-//            jwtAttributeSet = JSONObjectUtils.parseJSONObject(new String(decoded)).entrySet();
-//        }  catch (ParseException e) {
-//            log.error("Error occurred while parsing JWT provided by federated IDP: ", e);
-//        }
-//        Map<String, Object> jwtAttributeMap = new HashMap();
-//        for(Map.Entry<String, Object> entry : jwtAttributeSet) {
-//            jwtAttributeMap.put(entry.getKey(), entry.getValue());
-//        }
-//        return jwtAttributeMap;
-//    }
-
-//    private String getAuthenticatedUserId(AuthenticationContext context, OAuthClientResponse oAuthResponse,
-//                                          Map<String, Object> idTokenClaims) throws AuthenticationFailedException {
-//        String authenticatedUserId;
-//        if (isUserIdFoundAmongClaims(context)) {
-//            authenticatedUserId = getSubjectFromUserIDClaimURI(context, idTokenClaims);
-//            if (StringUtils.isNotBlank(authenticatedUserId)) {
-//                if (log.isDebugEnabled()) {
-//                    log.debug("Authenticated user id: " + authenticatedUserId + " was found among id_token claims.");
-//                }
-//            } else {
-//                if (log.isDebugEnabled()) {
-//                    log.debug("Subject claim could not be found amongst id_token claims. Defaulting to the 'sub' "
-//                            + "attribute in id_token as authenticated user id.");
-//                }
-//                // Default to userId sent as the 'sub' claim.
-//                authenticatedUserId = getAuthenticateUser(context, idTokenClaims, oAuthResponse);
-//            }
-//        } else {
-//            authenticatedUserId = getAuthenticateUser(context, idTokenClaims, oAuthResponse);
-//            if (log.isDebugEnabled()) {
-//                log.debug("Authenticated user id: " + authenticatedUserId + " retrieved from the 'sub' claim.");
-//            }
-//        }
-//
-//        if (authenticatedUserId == null) {
-//            throw new AuthenticationFailedException(
-//                    "Cannot find the userId from the id_token sent by the federated IDP.");
-//        }
-//        return authenticatedUserId;
-//    }
-
-//    private boolean isUserIdFoundAmongClaims(AuthenticationContext context) {
-//        return Boolean.parseBoolean(context.getAuthenticatorProperties()
-//                .get(IdentityApplicationConstants.Authenticator.OIDC.IS_USER_ID_IN_CLAIMS));
-//    }
     /**
      * Get Configuration Properties
      *
@@ -360,7 +317,7 @@ public class WeblogicOauth2Authenticator extends OpenIDConnectAuthenticator
 
         Property userinfoEndpointUrl = new Property();
         userinfoEndpointUrl.setDisplayName("Userinfo Endpoint URL");
-        userinfoEndpointUrl.setName(IdentityApplicationConstants.OAuth2.OAUTH2_USER_INFO_EP_URL);
+        userinfoEndpointUrl.setName(IdentityApplicationConstants.Authenticator.OIDC.USER_INFO_URL);
         userinfoEndpointUrl.setDescription("Enter value corresponding to userinfo endpoint url");
         userinfoEndpointUrl.setDisplayOrder(6);
         configProperties.add(userinfoEndpointUrl);
