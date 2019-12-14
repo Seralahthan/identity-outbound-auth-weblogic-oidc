@@ -11,12 +11,14 @@ import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
 import org.apache.oltu.oauth2.client.response.OAuthAuthzResponse;
 import org.apache.oltu.oauth2.client.response.OAuthClientResponse;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
+import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.apache.oltu.oauth2.common.utils.JSONUtils;
 import org.wso2.carbon.identity.application.authentication.framework.FederatedApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.ExternalIdPConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.ApplicationAuthenticatorException;
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
+import org.wso2.carbon.identity.application.authentication.framework.exception.LogoutFailedException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.application.authenticator.oidc.OIDCAuthenticatorConstants;
@@ -104,6 +106,50 @@ public class WeblogicOauth2Authenticator extends OpenIDConnectAuthenticator
             log.error("Authentication process failed.", e);
             throw new AuthenticationFailedException(e.getMessage(), context.getSubject(), e);
         }
+    }
+
+    /**
+     *
+     * @param request
+     * @param response
+     * @param context
+     */
+    @Override
+    protected void processLogoutResponse(HttpServletRequest request, HttpServletResponse response,
+                                         AuthenticationContext context) {
+        log.debug("Handled logout response from service provider " + request.getParameter("sp") +
+                " in tenant domain " + request.getParameter("tenantDomain"));
+    }
+
+    protected String getLogoutUrl(Map<String, String> authenticatorProperties) {
+        return authenticatorProperties.get(WeblogicOauth2AuthenticatorConstants.IDP_LOGOUT_URL);
+    }
+
+    @Override
+    protected void initiateLogoutRequest(HttpServletRequest request, HttpServletResponse response,
+                                                 AuthenticationContext context) throws LogoutFailedException {
+        if (isLogoutEnabled(context)) {
+            String logoutUrl = getLogoutUrl(context.getAuthenticatorProperties());
+
+            Map<String, String> paramMap = new HashMap<>();
+
+            try {
+                logoutUrl = FrameworkUtils.buildURLWithQueryParams(logoutUrl, paramMap);
+                response.sendRedirect(logoutUrl);
+            } catch (IOException e) {
+                String idpName = context.getExternalIdP().getName();
+                String tenantDomain = context.getTenantDomain();
+                throw new LogoutFailedException("Error occured while initiating the logout request to IdP: " + idpName
+                        + " of tenantDomain: " + tenantDomain, e);
+            }
+        } else {
+            super.initiateLogoutRequest(request, response, context);
+        }
+    }
+
+    private boolean isLogoutEnabled(AuthenticationContext context) {
+        String logoutUrl = getLogoutUrl(context.getAuthenticatorProperties());
+        return StringUtils.isNotBlank(logoutUrl);
     }
 
     protected Map<ClaimMapping, String> buildClaims(Map<String, Object> jsonObject) {
@@ -322,19 +368,26 @@ public class WeblogicOauth2Authenticator extends OpenIDConnectAuthenticator
         userinfoEndpointUrl.setDisplayOrder(6);
         configProperties.add(userinfoEndpointUrl);
 
+        Property idpLogoutUrl = new Property();
+        idpLogoutUrl.setDisplayName("Logout URL");
+        idpLogoutUrl.setName(WeblogicOauth2AuthenticatorConstants.IDP_LOGOUT_URL);
+        idpLogoutUrl.setDescription("Enter value corresponding to the logout url");
+        idpLogoutUrl.setDisplayOrder(7);
+        configProperties.add(idpLogoutUrl);
+
         Property scope = new Property();
         scope.setDisplayName("Additional Query Parameters");
         scope.setName("AdditionalQueryParameters");
 //        scope.setValue("scope=openid email profile");
         scope.setDescription("Additional query parameters. e.g: paramName1=value1");
-        scope.setDisplayOrder(7);
+        scope.setDisplayOrder(8);
         configProperties.add(scope);
 
         Property userinfoFields = new Property();
         userinfoFields.setDisplayName("User Information Fields");
         userinfoFields.setName(WeblogicOauth2AuthenticatorConstants.USER_INFO_FIELDS);
         userinfoFields.setDescription("Enter comma-separated user information fields you want to retrieve");
-        userinfoFields.setDisplayOrder(8);
+        userinfoFields.setDisplayOrder(9);
         configProperties.add(userinfoFields);
 
         Property isBasicAuthEnabled = new Property();
@@ -344,7 +397,7 @@ public class WeblogicOauth2Authenticator extends OpenIDConnectAuthenticator
         isBasicAuthEnabled.setDefaultValue("false");
         isBasicAuthEnabled.setDescription("Specifies that HTTP basic authentication should be used for client " +
                 "authentication, else client credentials will be included in the request body ");
-        isBasicAuthEnabled.setDisplayOrder(9);
+        isBasicAuthEnabled.setDisplayOrder(10);
         configProperties.add(isBasicAuthEnabled);
 
         return configProperties;
