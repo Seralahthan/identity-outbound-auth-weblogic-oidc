@@ -133,6 +133,9 @@ public class WeblogicOauth2Authenticator extends OpenIDConnectAuthenticator
 
             Map<String, String> paramMap = new HashMap<>();
 
+            String callback = getCallbackUrl(context.getAuthenticatorProperties());
+            paramMap.put(WeblogicOauth2AuthenticatorConstants.POST_LOGOUT_REDIRECT_URI, callback);
+
             try {
                 logoutUrl = FrameworkUtils.buildURLWithQueryParams(logoutUrl, paramMap);
                 response.sendRedirect(logoutUrl);
