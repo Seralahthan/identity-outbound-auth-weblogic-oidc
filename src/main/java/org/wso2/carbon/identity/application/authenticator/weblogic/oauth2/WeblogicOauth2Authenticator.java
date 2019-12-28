@@ -20,6 +20,7 @@ import org.wso2.carbon.identity.application.authentication.framework.exception.A
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
 import org.wso2.carbon.identity.application.authentication.framework.exception.LogoutFailedException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.application.authenticator.oidc.OIDCAuthenticatorConstants;
 import org.wso2.carbon.identity.application.authenticator.oidc.OpenIDConnectAuthenticator;
@@ -135,6 +136,9 @@ public class WeblogicOauth2Authenticator extends OpenIDConnectAuthenticator
 
             String callback = getCallbackUrl(context.getAuthenticatorProperties());
             paramMap.put(WeblogicOauth2AuthenticatorConstants.POST_LOGOUT_REDIRECT_URI, callback);
+
+            String sessionID = getStateParameter(context, context.getAuthenticatorProperties());
+            paramMap.put(WeblogicOauth2AuthenticatorConstants.OAUTH2_PARAM_STATE, sessionID);
 
             try {
                 logoutUrl = FrameworkUtils.buildURLWithQueryParams(logoutUrl, paramMap);
@@ -380,8 +384,8 @@ public class WeblogicOauth2Authenticator extends OpenIDConnectAuthenticator
 
         Property scope = new Property();
         scope.setDisplayName("Additional Query Parameters");
-        scope.setName("AdditionalQueryParameters");
-//        scope.setValue("scope=openid email profile");
+        scope.setName(FrameworkConstants.QUERY_PARAMS);
+        scope.setValue("scope=read");
         scope.setDescription("Additional query parameters. e.g: paramName1=value1");
         scope.setDisplayOrder(8);
         configProperties.add(scope);
@@ -406,5 +410,10 @@ public class WeblogicOauth2Authenticator extends OpenIDConnectAuthenticator
         return configProperties;
     }
 
+    private String getStateParameter(AuthenticationContext context, Map<String, String> authenticatorProperties) {
+
+        String state = context.getContextIdentifier() + "," + OIDCAuthenticatorConstants.LOGIN_TYPE;
+        return getState(state, authenticatorProperties);
+    }
 }
 
