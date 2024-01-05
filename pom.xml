@@ -366,7 +366,7 @@
         <identity.application.auth.oauth2.package.export.version>${project.version}
         </identity.application.auth.oauth2.package.export.version>
 
-        <carbon.identity.framework.version>5.12.387</carbon.identity.framework.version>
+        <carbon.identity.framework.version>5.20.254</carbon.identity.framework.version>
         <oltu.version>1.0.0.wso2v3</oltu.version>
         <json-smart.version>2.3</json-smart.version>
         <json.wso2.version>3.0.0.wso2v1</json.wso2.version>
